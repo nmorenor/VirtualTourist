@@ -47,9 +47,11 @@ public class PinLocation : NSManagedObject, Equatable, Printable, Hashable {
         var result = false
         
         for next in self.photos {
-            if next.isDownloading() {
-                result = true
-                break
+            if let downloadWorker = next.downloadWorker {
+                if downloadWorker.isDownloading() {
+                    result = true
+                    break
+                }
             }
         }
         

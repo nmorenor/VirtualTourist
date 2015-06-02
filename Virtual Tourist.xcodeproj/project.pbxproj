@@ -18,6 +18,7 @@
 		66372B7F1B16A9BA0019C721 /* VirtualTouristMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66372B7E1B16A9BA0019C721 /* VirtualTouristMapViewController.swift */; };
 		66372B821B16AEAF0019C721 /* MapPinAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66372B811B16AEAF0019C721 /* MapPinAnnotation.swift */; };
 		66372B841B16B3F60019C721 /* VirtualTourinstMapViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66372B831B16B3F60019C721 /* VirtualTourinstMapViewDelegate.swift */; };
+		66B9C2031B1E3B2100242C4F /* PhotoDownloadWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66B9C2021B1E3B2100242C4F /* PhotoDownloadWorker.swift */; };
 		66C4B4E01B1D1D2500F2BBD7 /* ImageLoadDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C4B4DF1B1D1D2500F2BBD7 /* ImageLoadDelegate.swift */; };
 		66C4B4E21B1D22B200F2BBD7 /* PinLocationDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C4B4E11B1D22B200F2BBD7 /* PinLocationDetail.swift */; };
 		66FDA7421B1942C5007B2507 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FDA7401B1942C5007B2507 /* HTTPClient.swift */; };
@@ -65,6 +66,7 @@
 		66372B7E1B16A9BA0019C721 /* VirtualTouristMapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VirtualTouristMapViewController.swift; sourceTree = "<group>"; };
 		66372B811B16AEAF0019C721 /* MapPinAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapPinAnnotation.swift; sourceTree = "<group>"; };
 		66372B831B16B3F60019C721 /* VirtualTourinstMapViewDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VirtualTourinstMapViewDelegate.swift; sourceTree = "<group>"; };
+		66B9C2021B1E3B2100242C4F /* PhotoDownloadWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoDownloadWorker.swift; sourceTree = "<group>"; };
 		66C4B4DF1B1D1D2500F2BBD7 /* ImageLoadDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoadDelegate.swift; sourceTree = "<group>"; };
 		66C4B4E11B1D22B200F2BBD7 /* PinLocationDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinLocationDetail.swift; sourceTree = "<group>"; };
 		66FDA7401B1942C5007B2507 /* HTTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 				66FDA73F1B19429A007B2507 /* Clients */,
 				66FDA7571B1A23D6007B2507 /* ImageCache.swift */,
 				66FDA7531B1A2363007B2507 /* Photo.swift */,
+				66B9C2021B1E3B2100242C4F /* PhotoDownloadWorker.swift */,
 				66FDA75C1B1A3586007B2507 /* PinLocation.swift */,
 				66C4B4E11B1D22B200F2BBD7 /* PinLocationDetail.swift */,
 				66FDA7631B1BD55A007B2507 /* ManagedObjectObserver.swift */,
@@ -372,6 +375,7 @@
 				66FDA7431B1942C5007B2507 /* HTTPClientProtocol.swift in Sources */,
 				66FDA76C1B1C1D49007B2507 /* VTActivityViewController.swift in Sources */,
 				66FDA7661B1C17FF007B2507 /* FlickerPhotoDelegate.swift in Sources */,
+				66B9C2031B1E3B2100242C4F /* PhotoDownloadWorker.swift in Sources */,
 				66372B841B16B3F60019C721 /* VirtualTourinstMapViewDelegate.swift in Sources */,
 				66FDA74C1B1A059C007B2507 /* FlickerConvenience.swift in Sources */,
 				66FDA74A1B1A059C007B2507 /* FlickerClient.swift in Sources */,
