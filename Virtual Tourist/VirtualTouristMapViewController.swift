@@ -36,7 +36,9 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         self.fetchedResutlsController.delegate = self
         if let fetched = self.fetchedResutlsController.fetchedObjects as? [PinLocation] {
             for annotation in fetched {
-                self.mapView.addAnnotation(MapPinAnnotation(latitude: annotation.latitude as! Double, longitude: annotation.longitude as! Double))
+                let toAdd = MapPinAnnotation(latitude: annotation.latitude as! Double, longitude: annotation.longitude as! Double)
+                toAdd.location = annotation
+                self.mapView.addAnnotation(toAdd)
             }
         }
         self.updateConstrainstsForMode()
@@ -67,6 +69,7 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         case NSFetchedResultsChangeType.Insert :
             if let location:PinLocation = anObject as? PinLocation {
                 let annotation = MapPinAnnotation(latitude: location.latitude as! Double, longitude: location.longitude as! Double)
+                annotation.location = location
                 self.mapView.removeAnnotation(annotation)
                 self.mapView.addAnnotation(annotation)
             }
@@ -93,9 +96,10 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         if (recognizer.state == UIGestureRecognizerState.Ended) {
             
             dispatch_async(dispatch_get_main_queue()) {
-                let location = PinLocation(latitude:self.currentAnnotation!.coordinate.latitude, longitude: self.currentAnnotation!.coordinate.longitude, context: self.sharedContext)
+                let coordinate = self.currentAnnotation!.coordinate
+                let location = PinLocation(latitude: coordinate.latitude, longitude: coordinate.longitude, context: self.sharedContext)
                 CoreDataStackManager.sharedInstance().saveContext()
-                self.currentAnnotation?.location = location
+                self.currentAnnotation!.location = location
                 FlickerPhotoDelegate.sharedInstance().searchPhotos(location)
                 let clocation = CLLocation(latitude: self.currentAnnotation!.coordinate.latitude, longitude: self.currentAnnotation!.coordinate.longitude)
                 CLGeocoder().reverseGeocodeLocation(clocation) { placemarks, error in
@@ -126,9 +130,6 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
             self.currentAnnotation?.coordinate = touchMapCoordinate
             self.mapView.addAnnotation(self.currentAnnotation)
         } else {
-            if self.currentAnnotation != nil {
-                return
-            }
             let touchPoint = recognizer.locationInView(self.mapView)
             let touchMapCoordinate = self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView)
             

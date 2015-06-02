@@ -17,7 +17,7 @@ public class MapPinAnnotation: NSObject, MKAnnotation {
     public var location:PinLocation?
     
     init(latitude: Double, longitude:Double) {
-        self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: latitude)
+        self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         super.init()
     }
 }
