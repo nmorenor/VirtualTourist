@@ -33,9 +33,9 @@ extension VirtualTouristMapViewController : MKMapViewDelegate {
             if let pinAnnotation = view as? MKPinAnnotationView {
                 let annotation = pinAnnotation.annotation as! MapPinAnnotation
                 //do not allow delete while fetching photos
-                if annotation.location.canBeDeleted() {
+                if annotation.location!.canBeDeleted() {
                     dispatch_async(dispatch_get_main_queue()) {
-                        self.sharedContext.deleteObject(annotation.location)
+                        self.sharedContext.deleteObject(annotation.location!)
                         CoreDataStackManager.sharedInstance().saveContext()
                     }
                 }

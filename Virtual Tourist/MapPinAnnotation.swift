@@ -14,11 +14,10 @@ public class MapPinAnnotation: NSObject, MKAnnotation {
     public var title:String?
     public var subtitle:String?
     public var coordinate: CLLocationCoordinate2D
-    public var location:PinLocation
+    public var location:PinLocation?
     
-    init(location:PinLocation) {
-        self.coordinate = CLLocationCoordinate2D(latitude: location.latitude as! Double, longitude: location.longitude as! Double)
-        self.location = location
+    init(latitude: Double, longitude:Double) {
+        self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: latitude)
         super.init()
     }
 }

@@ -35,9 +35,9 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         noPhotosLabel.hidden = true
-        if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location) {
+        if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
             self.updateToolBar(false)
-            FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location, delegate: self)
+            FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location!, delegate: self)
             self.collectionView.hidden = true
             self.activityView = VTActivityViewController()
             self.activityView?.show(self, text: "Processing...")
@@ -46,7 +46,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             self.updateToolBar(true)
         }
         
-        if let details = self.annotation.location.details {
+        if let details = self.annotation.location!.details {
             self.navigationItem.title = details.locality
         }
         
@@ -141,7 +141,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     }
     
     @IBAction func newCollection(sender: UIBarButtonItem) {
-        for photo in self.annotation.location.photos {
+        for photo in self.annotation.location!.photos {
             photo.pinLocation = nil
             //clean images from disk
             photo.image = nil
@@ -149,13 +149,13 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
         }
         CoreDataStackManager.sharedInstance().saveContext()
         
-        FlickerPhotoDelegate.sharedInstance().searchPhotos(self.annotation.location)
+        FlickerPhotoDelegate.sharedInstance().searchPhotos(self.annotation.location!)
         self.collectionView.hidden = true
         self.toolbar.hidden = true;
         self.view.layoutIfNeeded()
-        if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location) {
+        if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
             self.updateToolBar(false)
-            FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location, delegate: self)
+            FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location!, delegate: self)
             self.collectionView.hidden = true
             self.activityView = VTActivityViewController()
             self.activityView?.show(self, text: "Processing...")
@@ -174,7 +174,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     lazy var fetchedResultsViewController:NSFetchedResultsController = {
         let fetchRequest = NSFetchRequest(entityName: "Photo")
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "imagePath", ascending: true)]
-        fetchRequest.predicate = NSPredicate(format: "pinLocation == %@", self.annotation.location)
+        fetchRequest.predicate = NSPredicate(format: "pinLocation == %@", self.annotation.location!)
         
         let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: "photos")
         fetchedResultsController.delegate = self

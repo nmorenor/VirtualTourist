@@ -36,7 +36,7 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         self.fetchedResutlsController.delegate = self
         if let fetched = self.fetchedResutlsController.fetchedObjects as? [PinLocation] {
             for annotation in fetched {
-                self.mapView.addAnnotation(MapPinAnnotation(location: annotation))
+                self.mapView.addAnnotation(MapPinAnnotation(latitude: annotation.latitude as! Double, longitude: annotation.longitude as! Double))
             }
         }
         self.updateConstrainstsForMode()
@@ -66,7 +66,7 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         switch(type) {
         case NSFetchedResultsChangeType.Insert :
             if let location:PinLocation = anObject as? PinLocation {
-                let annotation = MapPinAnnotation(location: location)
+                let annotation = MapPinAnnotation(latitude: location.latitude as! Double, longitude: location.longitude as! Double)
                 self.mapView.removeAnnotation(annotation)
                 self.mapView.addAnnotation(annotation)
             }
@@ -90,30 +90,33 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
     //MARK: - Controller
     
     func handleLongPress(recognizer:UIGestureRecognizer) {
-        
         if (recognizer.state == UIGestureRecognizerState.Ended) {
-            FlickerPhotoDelegate.sharedInstance().searchPhotos(self.currentAnnotation!.location)
             
-            let pinLocation = self.currentAnnotation!.location
-            let location = CLLocation(latitude: self.currentAnnotation!.coordinate.latitude, longitude: self.currentAnnotation!.coordinate.longitude)
-            CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
-                if error != nil {
-                    println("Reverse geocoder failed with error" + error.localizedDescription)
-                    return
-                }
+            dispatch_async(dispatch_get_main_queue()) {
+                let location = PinLocation(latitude:self.currentAnnotation!.coordinate.latitude, longitude: self.currentAnnotation!.coordinate.longitude, context: self.sharedContext)
+                CoreDataStackManager.sharedInstance().saveContext()
+                self.currentAnnotation?.location = location
+                FlickerPhotoDelegate.sharedInstance().searchPhotos(location)
+                let clocation = CLLocation(latitude: self.currentAnnotation!.coordinate.latitude, longitude: self.currentAnnotation!.coordinate.longitude)
+                CLGeocoder().reverseGeocodeLocation(clocation) { placemarks, error in
+                    if error != nil {
+                        println("Reverse geocoder failed with error" + error.localizedDescription)
+                        return
+                    }
                 
-                if placemarks.count > 0 {
-                    let pm = placemarks[0] as! CLPlacemark
+                    if placemarks.count > 0 {
+                        let pm = placemarks[0] as! CLPlacemark
                     
-                    if pm.locality != nil {
-                        dispatch_async(dispatch_get_main_queue()) {
-                            PinLocationDetail(location: pinLocation, locality: pm.locality, context: self.sharedContext)
-                            CoreDataStackManager.sharedInstance().saveContext()
+                        if pm.locality != nil {
+                            dispatch_async(dispatch_get_main_queue()) {
+                                PinLocationDetail(location: location, locality: pm.locality, context: self.sharedContext)
+                                CoreDataStackManager.sharedInstance().saveContext()
+                            }
                         }
                     }
                 }
+                self.currentAnnotation = nil
             }
-            self.currentAnnotation = nil
             return
         } else if (recognizer.state == UIGestureRecognizerState.Changed) {
             let touchPoint = recognizer.locationInView(self.mapView)
@@ -123,16 +126,14 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
             self.currentAnnotation?.coordinate = touchMapCoordinate
             self.mapView.addAnnotation(self.currentAnnotation)
         } else {
-            
+            if self.currentAnnotation != nil {
+                return
+            }
             let touchPoint = recognizer.locationInView(self.mapView)
             let touchMapCoordinate = self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView)
             
-            let pinLocation = PinLocation(latitude: touchMapCoordinate.latitude, longitude: touchMapCoordinate.longitude, context: self.sharedContext)
-            
-            self.currentAnnotation = MapPinAnnotation(location: pinLocation)
+            self.currentAnnotation = MapPinAnnotation(latitude: touchMapCoordinate.latitude, longitude: touchMapCoordinate.longitude)
             self.mapView.addAnnotation(self.currentAnnotation)
-            
-            CoreDataStackManager.sharedInstance().saveContext()
         }
     }
     
