@@ -43,12 +43,12 @@ public class PinLocation : NSManagedObject, Equatable, Printable, Hashable {
         self.longitude = longitude
     }
     
-    func canBeDeleted() -> Bool {
-        var result = true
+    func isDownloading() -> Bool {
+        var result = false
         
         for next in self.photos {
             if next.isDownloading() {
-                result = false
+                result = true
                 break
             }
         }

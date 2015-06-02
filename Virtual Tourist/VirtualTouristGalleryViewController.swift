@@ -11,14 +11,14 @@ import UIKit
 import MapKit
 import CoreData
 
-class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate, FlickerDelegate {
+class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate, FlickerDelegate, ImageLoadDelegate {
     
+    @IBOutlet weak var newCollectionButton: UIBarButtonItem!
     @IBOutlet weak var noPhotosLabel: UILabel!
     var annotation:MapPinAnnotation!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
     
-    @IBOutlet weak var toolbar: UIToolbar!
     var selectedIndexes = [NSIndexPath]()
     var insertedIndexPaths: [NSIndexPath]!
     var deletedIndexPaths: [NSIndexPath]!
@@ -43,7 +43,14 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             self.activityView?.show(self, text: "Processing...")
         } else {        
             self.performFetch()
-            self.updateToolBar(true)
+            if self.annotation.location!.isDownloading() {
+                for next in annotation.location!.photos {
+                    next.imageLoadDelegate.append(self)
+                }
+            } else {
+                self.updateToolBar(true)
+            }
+            
         }
         
         if let details = self.annotation.location!.details {
@@ -113,6 +120,9 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     }
     
     func didSearchLocationImages(success:Bool, location:PinLocation, photos:[Photo]?, errorString:String?) {
+        for next in annotation.location!.photos {
+            next.imageLoadDelegate.append(self)
+        }
         dispatch_async(dispatch_get_main_queue()) {
             self.activityView?.closeView()
             self.activityView = nil
@@ -125,19 +135,14 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             self.view.layoutIfNeeded()
             if (photos?.count > 0) {
                 UIView.animateWithDuration(1.0, animations: {
-                    self.updateToolBar(true)
                     self.view.layoutIfNeeded()
                 })
             }
         }
     }
     
-    func updateToolBar(showNewCollection:Bool) {
-        if showNewCollection {
-            self.toolbar.hidden = false
-        } else {
-            self.toolbar.hidden = true
-        }
+    func updateToolBar(enabled:Bool) {
+        self.newCollectionButton.enabled = enabled
     }
     
     @IBAction func newCollection(sender: UIBarButtonItem) {
@@ -151,7 +156,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
         
         FlickerPhotoDelegate.sharedInstance().searchPhotos(self.annotation.location!)
         self.collectionView.hidden = true
-        self.toolbar.hidden = true;
+        self.newCollectionButton.enabled = true;
         self.view.layoutIfNeeded()
         if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
             self.updateToolBar(false)
@@ -161,6 +166,20 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             self.activityView?.show(self, text: "Processing...")
         }
     }
+    
+    //MARK: - Image Load Delegate
+    
+    func progress(progress:CGFloat) {
+        //do nothings
+    }
+    
+    func didFinishLoad() {
+        let downloading = self.annotation.location!.isDownloading()
+        dispatch_async(dispatch_get_main_queue()) {
+            self.updateToolBar(!downloading)
+        }
+    }
+    
     //MARK: - Configure Cell
     
     func configureCell(cell: PhotoCell, atIndexPath indexPath:NSIndexPath) {

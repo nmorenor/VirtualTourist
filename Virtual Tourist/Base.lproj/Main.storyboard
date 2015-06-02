@@ -200,8 +200,8 @@
                     <connections>
                         <outlet property="collectionView" destination="Jdc-jW-c7g" id="UKv-a3-If1"/>
                         <outlet property="mapView" destination="7E5-Nt-8g2" id="zhO-aZ-GXY"/>
+                        <outlet property="newCollectionButton" destination="Ro7-FI-fcx" id="Ldj-3F-LK8"/>
                         <outlet property="noPhotosLabel" destination="YHB-k0-c5R" id="jeb-qf-Qyh"/>
-                        <outlet property="toolbar" destination="CgX-PD-WR0" id="lrc-nH-qhK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Xhd-DZ-4iM" userLabel="First Responder" sceneMemberID="firstResponder"/>

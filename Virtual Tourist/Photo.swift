@@ -18,7 +18,7 @@ public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
     @NSManaged public var flickrURL:NSURL
     @NSManaged public var pinLocation:PinLocation?
     
-    var imageLoadDelegate:ImageLoadDelegate?
+    var imageLoadDelegate:[ImageLoadDelegate] = [ImageLoadDelegate]()
     private var connection:NSURLConnection?
     private var imageData:NSMutableData?
     private var totalBytes:Int = 0
@@ -48,7 +48,7 @@ public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
                 if deletedObjects.containsObject(self) && self.image != nil {
                     if let conn = self.connection {
                         conn.cancel()
-                        self.imageLoadDelegate = nil
+                        self.imageLoadDelegate.removeAll(keepCapacity: false)
                         self.totalBytes = 0
                         self.receivedBytes = 0
                         self.imageData = nil
@@ -90,7 +90,7 @@ public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
         self.receivedBytes += data.length
         
         var progress = CGFloat((Float(self.receivedBytes) / Float(self.totalBytes)))
-        self.imageLoadDelegate?.progress(progress)
+        self.fireProgressDelegate(progress)
     }
     
     public func connectionDidFinishLoading(connection: NSURLConnection) {
@@ -99,11 +99,23 @@ public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
             self.image = image
         }
         self.connection = nil
-        self.imageLoadDelegate?.didFinishLoad()
-        self.imageLoadDelegate = nil
+        self.fireLoadFinish()
+        self.imageLoadDelegate.removeAll(keepCapacity: false)
         self.totalBytes = 0
         self.receivedBytes = 0
         self.imageData = nil
+    }
+    
+    func fireProgressDelegate(progress:CGFloat) {
+        for next in imageLoadDelegate {
+            next.progress(progress)
+        }
+    }
+    
+    func fireLoadFinish() {
+        for next in imageLoadDelegate {
+            next.didFinishLoad()
+        }
     }
     
     private func download() {
