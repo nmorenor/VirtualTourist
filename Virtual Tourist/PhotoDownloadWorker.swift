@@ -58,7 +58,7 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
         self.totalBytes = 0
         self.receivedBytes = 0
         self.imageData = nil
-
+        self.session = nil
         PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo)
     }
     
@@ -106,5 +106,6 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
         self.totalBytes = 0
         self.receivedBytes = 0
         self.imageData = nil
+        self.session = nil
     }
 }
