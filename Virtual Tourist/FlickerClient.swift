@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-let FLICKR_API_KEY = "FLICKER_API"
+let FLICKR_API_KEY = "8c97222cbce046fd94f0c1a6fc17a022"
 
 public class FlickerClient: NSObject, HTTPClientProtocol {
     

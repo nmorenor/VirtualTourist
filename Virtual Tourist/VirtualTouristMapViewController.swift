@@ -94,7 +94,9 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
     
     func handleLongPress(recognizer:UIGestureRecognizer) {
         if (recognizer.state == UIGestureRecognizerState.Ended) {
-            
+            if self.editMode {
+                return
+            }
             dispatch_async(dispatch_get_main_queue()) {
                 let coordinate = self.currentAnnotation!.coordinate
                 let location = PinLocation(latitude: coordinate.latitude, longitude: coordinate.longitude, context: self.sharedContext)

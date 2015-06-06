@@ -45,7 +45,9 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             self.performFetch()
             if self.annotation.location!.isDownloading() {
                 for next in annotation.location!.photos {
-                    next.downloadWorker?.imageLoadDelegate.append(self)
+                    if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next] as? PhotoDownloadWorker {
+                        downloadWorker.imageLoadDelegate.append(self)
+                    }
                 }
             } else {
                 self.updateToolBar(true)
@@ -121,7 +123,9 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     
     func didSearchLocationImages(success:Bool, location:PinLocation, photos:[Photo]?, errorString:String?) {
         for next in annotation.location!.photos {
-            next.downloadWorker?.imageLoadDelegate.append(self)
+            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next] as? PhotoDownloadWorker {
+                downloadWorker.imageLoadDelegate.append(self)
+            }
         }
         dispatch_async(dispatch_get_main_queue()) {
             self.activityView?.closeView()

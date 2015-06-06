@@ -47,7 +47,7 @@ public class PinLocation : NSManagedObject, Equatable, Printable, Hashable {
         var result = false
         
         for next in self.photos {
-            if let downloadWorker = next.downloadWorker {
+            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next] as? PhotoDownloadWorker {
                 if downloadWorker.isDownloading() {
                     result = true
                     break

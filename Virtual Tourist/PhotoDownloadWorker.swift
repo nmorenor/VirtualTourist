@@ -10,42 +10,81 @@ import Foundation
 import UIKit
 import QuartzCore
 
-public class PhotoDownloadWorker:NSObject, NSURLConnectionDataDelegate {
+public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
     
     var imageLoadDelegate:[ImageLoadDelegate] = [ImageLoadDelegate]()
-    private var connection:NSURLConnection?
     private var imageData:NSMutableData?
     private var totalBytes:Int = 0
     private var receivedBytes:Int = 0
     var photo:Photo!
-    
-    override init() {
-        super.init()
-    }
+    var session:NSURLSession!
     
     convenience init(photo:Photo) {
         self.init()
+        let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
+        session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: PendingPhotoDownloads.sharedInstance().downloadQueue)
         self.photo = photo
+        PendingPhotoDownloads.sharedInstance().downloadsInProgress[self.photo] = self
+        PendingPhotoDownloads.sharedInstance().downloadQueue.addOperation(self)
+    }
+    
+    public override func main() {
         self.download()
     }
     
     public func isDownloading() -> Bool {
-        return self.connection != nil
+        return PendingPhotoDownloads.sharedInstance().downloadsInProgress.indexForKey(self.photo) != nil
     }
     
-    public func connection(connection: NSURLConnection, didReceiveResponse response: NSURLResponse) {
-        let httpResponse = response as! NSHTTPURLResponse
-        let dictionary = httpResponse.allHeaderFields as! [String:String]
-        let lengthString = dictionary["Content-Length"]
-        let numberFormatter = NSNumberFormatter()
-        let length:NSNumber = numberFormatter.numberFromString(lengthString!)!
-        
-        self.totalBytes = length as Int
+    func fireProgressDelegate(progress:CGFloat) {
+        for next in imageLoadDelegate {
+            dispatch_async(dispatch_get_main_queue()) {
+                next.progress(progress)
+            }
+        }
+    }
+    
+    func fireLoadFinish() {
+        for next in imageLoadDelegate {
+            dispatch_async(dispatch_get_main_queue()) {
+                next.didFinishLoad()
+            }
+        }
+    }
+    
+    override public func cancel() {
+        super.cancel()
+        self.imageLoadDelegate.removeAll(keepCapacity: false)
+        self.totalBytes = 0
         self.receivedBytes = 0
-        self.imageData = NSMutableData(capacity: self.totalBytes)
+        self.imageData = nil
+
+        PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo)
     }
     
-    public func connection(connection: NSURLConnection, didReceiveData data: NSData) {
+    private func download() {
+        let request = NSURLRequest(URL: self.photo.flickrURL)
+        let dataTask = self.session.dataTaskWithRequest(request)
+        
+        dataTask.resume()
+    }
+    
+    public func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse, completionHandler: (NSURLSessionResponseDisposition) -> Void) {
+        if self.cancelled {
+            return;
+        }
+        
+        self.receivedBytes = 0
+        self.totalBytes = Int(response.expectedContentLength);
+        self.imageData = NSMutableData(capacity: self.totalBytes)
+        completionHandler(NSURLSessionResponseDisposition.Allow)
+    }
+    
+    public func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData) {
+        if self.cancelled {
+            return;
+        }
+        
         self.imageData?.appendData(data)
         self.receivedBytes += data.length
         
@@ -53,45 +92,19 @@ public class PhotoDownloadWorker:NSObject, NSURLConnectionDataDelegate {
         self.fireProgressDelegate(progress)
     }
     
-    public func connectionDidFinishLoading(connection: NSURLConnection) {
+    public func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
+        PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo)
+        if let error = error {
+            println("Error downloading photo \(error)")
+        }
         if let imageData = self.imageData {
             let image = UIImage(data: imageData)
             self.photo.image = image
         }
-        self.connection = nil
         self.fireLoadFinish()
         self.imageLoadDelegate.removeAll(keepCapacity: false)
         self.totalBytes = 0
         self.receivedBytes = 0
         self.imageData = nil
-    }
-    
-    func fireProgressDelegate(progress:CGFloat) {
-        for next in imageLoadDelegate {
-            next.progress(progress)
-        }
-    }
-    
-    func fireLoadFinish() {
-        for next in imageLoadDelegate {
-            next.didFinishLoad()
-        }
-    }
-    
-    func cancel() {
-        if let conn = self.connection {
-            conn.cancel()
-            self.imageLoadDelegate.removeAll(keepCapacity: false)
-            self.totalBytes = 0
-            self.receivedBytes = 0
-            self.imageData = nil
-        }
-    }
-    
-    private func download() {
-        let request = NSURLRequest(URL: self.photo.flickrURL)
-        self.connection = NSURLConnection(request: request, delegate: self, startImmediately:false)
-        self.connection!.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
-        self.connection!.start()
     }
 }

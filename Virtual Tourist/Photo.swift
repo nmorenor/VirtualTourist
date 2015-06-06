@@ -12,16 +12,18 @@ import CoreData
 
 @objc(Photo)
 
-public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
+public class Photo : NSManagedObject, Equatable {
     
     @NSManaged public var imagePath:String
     @NSManaged public var flickrURL:NSURL
     @NSManaged public var pinLocation:PinLocation?
-    public var downloadWorker:PhotoDownloadWorker?
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         self.listenForDelete(context)
+        if self.image == nil {
+            PhotoDownloadWorker(photo: self)
+        }
     }
     
     init(location:PinLocation, imageURL:NSURL, context:NSManagedObjectContext) {
@@ -34,7 +36,7 @@ public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
         
         self.listenForDelete(context)
         
-        self.downloadWorker = PhotoDownloadWorker(photo: self)
+        PhotoDownloadWorker(photo: self)
     }
     
     private func listenForDelete(context:NSManagedObjectContext?) {
@@ -56,10 +58,6 @@ public class Photo : NSManagedObject, Equatable, NSURLConnectionDataDelegate {
             ImageCache.sharedInstance().storeImage(newValue, withIdentifier: "\(self.imagePath)")
         }
     }
-    
-    
-    
-    
 }
 
 public func ==(lhs:Photo, rhs:Photo) -> Bool {

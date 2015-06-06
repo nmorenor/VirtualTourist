@@ -19,8 +19,12 @@ class PhotoCell: UICollectionViewCell, ImageLoadDelegate {
     override func layoutSubviews() {
         super.layoutSubviews()
         if self.photo.image == nil {
-            self.photo.downloadWorker?.imageLoadDelegate.append(self)
-            self.configureLoadingCell()
+            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[self.photo] as? PhotoDownloadWorker {
+                downloadWorker.imageLoadDelegate.append(self)
+                self.configureLoadingCell()
+            } else {
+                self.configureCellWithPhoto()
+            }
         } else {
             self.configureCellWithPhoto()
         }
