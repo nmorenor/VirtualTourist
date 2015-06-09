@@ -34,10 +34,8 @@ public class PinLocation : NSManagedObject, Equatable, Printable, Hashable {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
-    init(latitude:NSNumber, longitude:NSNumber, context:NSManagedObjectContext) {
-        
-        let entity = NSEntityDescription.entityForName("PinLocation", inManagedObjectContext: context)!
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    convenience init(latitude:NSNumber, longitude:NSNumber, context:NSManagedObjectContext) {
+        self.init(context: context)
         
         self.latitude = latitude
         self.longitude = longitude
@@ -47,7 +45,7 @@ public class PinLocation : NSManagedObject, Equatable, Printable, Hashable {
         var result = false
         
         for next in self.photos {
-            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next] as? PhotoDownloadWorker {
+            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next.description.hashValue] as? PhotoDownloadWorker {
                 if downloadWorker.isDownloading() {
                     result = true
                     break

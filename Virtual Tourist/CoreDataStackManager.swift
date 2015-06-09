@@ -9,8 +9,6 @@
 import Foundation
 import CoreData
 
-private let SQLITE_FILE_NAME = "VirtualTourist.sqlite"
-
 class CoreDataStackManager {
     
     class func sharedInstance() -> CoreDataStackManager {
@@ -20,56 +18,19 @@ class CoreDataStackManager {
         return Static.instance
     }
     
-    lazy var applicationsDocumentDirectory:NSURL = {
-        let url = NSFileManager.defaultManager().URLsForDirectory(NSSearchPathDirectory.DocumentDirectory, inDomains: NSSearchPathDomainMask.UserDomainMask).last as! NSURL
-        return url
+    lazy var dataModel:CoreDataModel = {
+        return CoreDataModel(name: "VirtualTourist")
     }()
     
-    lazy var managedModelObject:NSManagedObjectModel = {
-        let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd")!
-        return NSManagedObjectModel(contentsOfURL: modelURL)!
-    }()
-    
-    lazy var persistenceStoreCoordinator:NSPersistentStoreCoordinator? = {
-        var coordinator:NSPersistentStoreCoordinator? = NSPersistentStoreCoordinator(managedObjectModel: self.managedModelObject)
-        let url = self.applicationsDocumentDirectory.URLByAppendingPathComponent(SQLITE_FILE_NAME)
-        
-        println("sqlite path: \(url.path)")
-        
-        var error:NSError? = nil
-        if coordinator!.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options: nil, error: &error) == nil {
-            coordinator = nil
-            // Report any error we got.
-            let dict = NSMutableDictionary()
-            dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data"
-            dict[NSLocalizedFailureReasonErrorKey] = "There was an error creating or loading the application's saved data."
-            dict[NSUnderlyingErrorKey] = error
-            error = NSError(domain: "MEME_ERROR_DOMAIN", code: 9999, userInfo: dict as [NSObject : AnyObject])
-            
-            // Left in for development development.
-            NSLog("Unresolved error \(error), \(error!.userInfo)")
-            abort()
-        }
-        return coordinator
-    }()
-    
-    lazy var managedModelObjectContext:NSManagedObjectContext? = {
-        let coordinator = self.persistenceStoreCoordinator
-        if coordinator == nil {
-            return nil
-        }
-        let managedObjectContext = NSManagedObjectContext()
-        managedObjectContext.persistentStoreCoordinator = coordinator
-        return managedObjectContext
+    lazy var dataStack:CoreDataStack = {
+        return CoreDataStack(model: self.dataModel)
     }()
     
     func saveContext() {
-        if let context = self.managedModelObjectContext {
-            var error:NSError? = nil
-            if context.hasChanges && !context.save(&error) {
-                NSLog("Unresolved error \(error), \(error!.userInfo)")
-                abort()
-            }
+        var error:NSError? = nil
+        if self.dataStack.managedObjectContext.hasChanges && !self.dataStack.managedObjectContext.save(&error) {
+            NSLog("Unresolved error \(error), \(error!.userInfo)")
+            abort()
         }
     }
 }

@@ -29,15 +29,28 @@ extension FlickerClient {
                         urls.append(imageURL)
                     }
                 }
-                dispatch_async(dispatch_get_main_queue()) {
-                    let photos = urls.map({ Photo(location: annotation, imageURL: $0, context: self.sharedModelContext)})
-                    CoreDataStackManager.sharedInstance().saveContext()
-                    delegate?.didSearchLocationImages(true, location: annotation, photos: photos, errorString: nil)
+
+                if let pinLocation = self.sharedModelContext.objectWithID(annotation.objectID) as? PinLocation {
+                    let photosModel = urls.map({ Photo(location: pinLocation, imageURL: $0, context: self.sharedModelContext)})
+                    NSNotificationCenter.defaultCenter().addObserver(self, selector: "mergeChanges:", name: NSManagedObjectContextDidSaveNotification, object: self.sharedModelContext)
+                    saveContext(self.sharedModelContext) { success in
+                        dispatch_async(dispatch_get_main_queue()) {
+                            delegate?.didSearchLocationImages(true, location: annotation, photos: photos, errorString: nil)
+                        }
+                    }
                 }
                 
             } else {
                 delegate?.didSearchLocationImages(false, location: annotation, photos: nil, errorString: errorString)
             }
+        }
+    }
+    
+    public func mergeChanges(notification:NSNotification) {
+        var mainContext:NSManagedObjectContext = CoreDataStackManager.sharedInstance().dataStack.managedObjectContext
+        dispatch_async(dispatch_get_main_queue()) {
+            mainContext.mergeChangesFromContextDidSaveNotification(notification)
+            CoreDataStackManager.sharedInstance().saveContext()
         }
     }
     

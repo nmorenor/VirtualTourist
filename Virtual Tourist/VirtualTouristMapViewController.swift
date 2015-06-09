@@ -59,7 +59,7 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
     }()
     
     var sharedContext:NSManagedObjectContext {
-        return CoreDataStackManager.sharedInstance().managedModelObjectContext!
+        return CoreDataStackManager.sharedInstance().dataStack.managedObjectContext
     }
     
     //MARK: - NSFetchedResultsControllerDelegate

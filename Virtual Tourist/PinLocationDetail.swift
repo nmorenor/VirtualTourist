@@ -19,9 +19,8 @@ public class PinLocationDetail: NSManagedObject {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
-    init(location:PinLocation, locality:String, context:NSManagedObjectContext) {
-        let entity = NSEntityDescription.entityForName("PinLocationDetail", inManagedObjectContext: context)!
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    convenience init(location:PinLocation, locality:String, context:NSManagedObjectContext) {
+        self.init(context: context)
         
         self.locality = locality
         self.location = location

@@ -28,8 +28,6 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     var activityView:VTActivityViewController?
     var recognizer:UILongPressGestureRecognizer!
     
-    var observer:NSObjectProtocol?
-    
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -45,7 +43,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             self.performFetch()
             if self.annotation.location!.isDownloading() {
                 for next in annotation.location!.photos {
-                    if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next] as? PhotoDownloadWorker {
+                    if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next.description.hashValue] as? PhotoDownloadWorker {
                         downloadWorker.imageLoadDelegate.append(self)
                     }
                 }
@@ -61,11 +59,6 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
         
         self.recognizer = UILongPressGestureRecognizer(target: self, action: "handleLongPress:")
         self.collectionView.addGestureRecognizer(self.recognizer)
-        
-        self.observer = NSNotificationCenter.defaultCenter().addObserverForName(NSManagedObjectContextObjectsDidChangeNotification, object: self.sharedContext, queue: NSOperationQueue.mainQueue()) { notification in
-            self.processInsertedObjects(notification)
-            self.processDeletedObjects(notification)
-        }
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -81,9 +74,6 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        if let observer = self.observer {
-            NSNotificationCenter.defaultCenter().removeObserver(observer)
-        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -123,7 +113,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     
     func didSearchLocationImages(success:Bool, location:PinLocation, photos:[Photo]?, errorString:String?) {
         for next in annotation.location!.photos {
-            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next] as? PhotoDownloadWorker {
+            if let downloadWorker = PendingPhotoDownloads.sharedInstance().downloadsInProgress[next.description.hashValue] as? PhotoDownloadWorker {
                 downloadWorker.imageLoadDelegate.append(self)
             }
         }
@@ -205,44 +195,8 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     }()
     
     lazy var sharedContext:NSManagedObjectContext = {
-        return CoreDataStackManager.sharedInstance().managedModelObjectContext!
+        return CoreDataStackManager.sharedInstance().dataStack.managedObjectContext
     }()
-    
-    private func processInsertedObjects(notification:NSNotification) {
-        if let insertedObjects = notification.userInfo?[NSInsertedObjectsKey] as? NSSet {
-            for nextObject in insertedObjects {
-                if let nextPhoto = nextObject as? Photo {
-                    if nextPhoto.pinLocation! == self.annotation.location {
-                        dispatch_async(dispatch_get_main_queue()) {
-                            self.performFetch()
-                            self.collectionView.reloadData()
-                            self.collectionView.layoutIfNeeded()
-                            self.view.layoutIfNeeded()
-                        }
-                        self.isRefresh = true
-                        break
-                    }
-                }
-            }
-        }
-    }
-    
-    private func processDeletedObjects(notification:NSNotification) {
-        if let deletedObjects = notification.userInfo?[NSDeletedObjectsKey] as? NSSet {
-            for nextObject in deletedObjects {
-                if let nextPhoto = nextObject as? Photo {
-                    dispatch_async(dispatch_get_main_queue()) {
-                        self.performFetch()
-                        self.collectionView.reloadData()
-                        self.collectionView.layoutIfNeeded()
-                        self.view.layoutIfNeeded()
-                    }
-                    self.isRefresh = true
-                    break
-                }
-            }
-        }
-    }
     
     private func performFetch() {
         var error:NSError?

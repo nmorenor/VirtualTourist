@@ -12,31 +12,34 @@ import CoreData
 
 @objc(Photo)
 
-public class Photo : NSManagedObject, Equatable {
+public class Photo : NSManagedObject, Equatable, Printable {
     
     @NSManaged public var imagePath:String
     @NSManaged public var flickrURL:NSURL
     @NSManaged public var pinLocation:PinLocation?
     
-    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
-        self.listenForDelete(context)
-        if self.image == nil {
-            PhotoDownloadWorker(photo: self)
+    override public var description:String {
+        get {
+            return "latitude:\(self.pinLocation?.latitude)::longitude:\(self.pinLocation?.latitude)::imagePath::\(self.imagePath)"
         }
     }
     
+    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertIntoManagedObjectContext: context)
+        self.listenForDelete(context)
+    }
+    
     init(location:PinLocation, imageURL:NSURL, context:NSManagedObjectContext) {
-        
-        let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
+        let name = self.dynamicType.entityName()
+        let entity = NSEntityDescription.entityForName(name, inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         self.flickrURL = imageURL
         self.imagePath = self.flickrURL.lastPathComponent!
         self.pinLocation = location
-        
         self.listenForDelete(context)
-        
-        PhotoDownloadWorker(photo: self)
+        if self.image == nil {
+            PhotoDownloadWorker(photo: self)
+        }
     }
     
     private func listenForDelete(context:NSManagedObjectContext?) {

@@ -17,7 +17,7 @@ class PendingPhotoDownloads: NSObject {
         return Static.instance
     }
     
-    var downloadsInProgress:[Photo:AnyObject] = [Photo:AnyObject]()
+    var downloadsInProgress:[Int:AnyObject] = [Int:AnyObject]()
     var downloadQueue:NSOperationQueue
     
     override init() {

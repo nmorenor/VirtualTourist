@@ -24,7 +24,7 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: PendingPhotoDownloads.sharedInstance().downloadQueue)
         self.photo = photo
-        PendingPhotoDownloads.sharedInstance().downloadsInProgress[self.photo] = self
+        PendingPhotoDownloads.sharedInstance().downloadsInProgress[self.photo.description.hashValue] = self
         PendingPhotoDownloads.sharedInstance().downloadQueue.addOperation(self)
     }
     
@@ -33,7 +33,7 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
     }
     
     public func isDownloading() -> Bool {
-        return PendingPhotoDownloads.sharedInstance().downloadsInProgress.indexForKey(self.photo) != nil
+        return PendingPhotoDownloads.sharedInstance().downloadsInProgress.indexForKey(self.photo.description.hashValue) != nil
     }
     
     func fireProgressDelegate(progress:CGFloat) {
@@ -59,7 +59,7 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
         self.receivedBytes = 0
         self.imageData = nil
         self.session = nil
-        PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo)
+        PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo.description.hashValue)
     }
     
     private func download() {
@@ -93,7 +93,7 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
     }
     
     public func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
-        PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo)
+        PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo.description.hashValue)
         if let error = error {
             println("Error downloading photo \(error)")
         }
