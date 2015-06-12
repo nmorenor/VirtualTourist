@@ -26,7 +26,6 @@ public class Photo : NSManagedObject, Equatable, Printable {
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
-        self.listenForDelete(context)
     }
     
     init(location:PinLocation, imageURL:NSURL, context:NSManagedObjectContext) {
@@ -36,20 +35,13 @@ public class Photo : NSManagedObject, Equatable, Printable {
         self.flickrURL = imageURL
         self.imagePath = self.flickrURL.lastPathComponent!
         self.pinLocation = location
-        self.listenForDelete(context)
         if self.image == nil {
             PhotoDownloadWorker(photo: self)
         }
     }
     
-    private func listenForDelete(context:NSManagedObjectContext?) {
-        NSNotificationCenter.defaultCenter().addObserverForName(NSManagedObjectContextObjectsDidChangeNotification, object: context, queue: NSOperationQueue.mainQueue()) { notification in
-            if let deletedObjects = notification.userInfo?[NSDeletedObjectsKey] as? NSSet {
-                if deletedObjects.containsObject(self) && self.image != nil {
-                    self.image = nil
-                }
-            }
-        }
+    public override func prepareForDeletion() {
+        self.image = nil
     }
     
     var image:UIImage? {

@@ -24,7 +24,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     var deletedIndexPaths: [NSIndexPath]!
     var updatedIndexPaths: [NSIndexPath]!
     
-    var isRefresh:Bool = false
+    var shouldFetch:Bool = false
     var activityView:VTActivityViewController?
     var recognizer:UILongPressGestureRecognizer!
     
@@ -34,6 +34,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
         super.viewDidLoad()
         noPhotosLabel.hidden = true
         if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
+            self.shouldFetch = true
             self.updateToolBar(false)
             FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location!, delegate: self)
             self.collectionView.hidden = true
@@ -48,7 +49,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
                     }
                 }
             } else {
-                self.updateToolBar(true)
+                self.updateToolBar(annotation.location!.photos.count > 0)
             }
             
         }
@@ -118,12 +119,16 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             }
         }
         dispatch_async(dispatch_get_main_queue()) {
+            let noPhotos = self.annotation.location!.photos.count == 0
+            self.noPhotosLabel.hidden = !noPhotos
             self.activityView?.closeView()
             self.activityView = nil
-            if !self.isRefresh {
+            self.collectionView.hidden = false
+            if (self.shouldFetch) {
+                self.shouldFetch = false
                 self.performFetch()
             }
-            self.collectionView.hidden = false
+            
             self.collectionView.reloadData()
             self.collectionView.layoutIfNeeded()
             self.view.layoutIfNeeded()
@@ -133,6 +138,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
                 })
             }
         }
+        
     }
     
     func updateToolBar(enabled:Bool) {
@@ -146,19 +152,21 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
             photo.image = nil
             self.sharedContext.deleteObject(photo)
         }
+        self.searchPhotosForLocation()
         CoreDataStackManager.sharedInstance().saveContext()
         
+    }
+    
+    func searchPhotosForLocation() {
         FlickerPhotoDelegate.sharedInstance().searchPhotos(self.annotation.location!)
         self.collectionView.hidden = true
-        self.newCollectionButton.enabled = true;
+        self.newCollectionButton.enabled = false;
         self.view.layoutIfNeeded()
-        if FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
-            self.updateToolBar(false)
-            FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location!, delegate: self)
-            self.collectionView.hidden = true
-            self.activityView = VTActivityViewController()
-            self.activityView?.show(self, text: "Processing...")
-        }
+        self.updateToolBar(false)
+        FlickerPhotoDelegate.sharedInstance().addDelegate(annotation.location!, delegate: self)
+        self.activityView = VTActivityViewController()
+        self.activityView?.show(self, text: "Processing...")
+        
     }
     
     //MARK: - Image Load Delegate
@@ -223,6 +231,15 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let sectionInfo = self.fetchedResultsViewController.sections![section] as! NSFetchedResultsSectionInfo
+        
+        if let photos = self.annotation!.location?.photos where photos.count == 0 && self.isViewLoaded() && self.view.window != nil && self.newCollectionButton.enabled && !FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
+            noPhotosLabel.hidden = false
+            collectionView.hidden = true
+            dispatch_async(dispatch_get_main_queue()) {
+                self.searchPhotosForLocation()
+            }
+        }
+        
         return sectionInfo.numberOfObjects
     }
     
