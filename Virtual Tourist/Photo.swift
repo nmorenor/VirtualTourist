@@ -20,7 +20,7 @@ public class Photo : NSManagedObject, Equatable, Printable {
     
     override public var description:String {
         get {
-            return "latitude:\(self.pinLocation?.latitude)::longitude:\(self.pinLocation?.latitude)::imagePath::\(self.imagePath)"
+            return self.flickrURL.path!
         }
     }
     
@@ -56,5 +56,5 @@ public class Photo : NSManagedObject, Equatable, Printable {
 }
 
 public func ==(lhs:Photo, rhs:Photo) -> Bool {
-    return lhs.flickrURL.isEqual(rhs) && lhs.pinLocation == rhs.pinLocation
+    return lhs.flickrURL.isEqual(rhs)
 }

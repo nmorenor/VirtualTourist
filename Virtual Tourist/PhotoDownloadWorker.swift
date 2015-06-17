@@ -10,22 +10,36 @@ import Foundation
 import UIKit
 import QuartzCore
 
-public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
+public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate, Hashable, Equatable  {
     
     var imageLoadDelegate:[ImageLoadDelegate] = [ImageLoadDelegate]()
     private var imageData:NSMutableData?
     private var totalBytes:Int = 0
     private var receivedBytes:Int = 0
-    var photo:Photo!
+    var photo:Photo
     var session:NSURLSession!
     
-    convenience init(photo:Photo) {
-        self.init()
+    public override var hashValue: Int {
+        get {
+            return self.photo.flickrURL.path!.hashValue
+        }
+    }
+    
+    init(photo:Photo) {
+        self.photo = photo
+        super.init()
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         session = NSURLSession(configuration: configuration, delegate: self, delegateQueue: PendingPhotoDownloads.sharedInstance().downloadQueue)
-        self.photo = photo
+        
         PendingPhotoDownloads.sharedInstance().downloadsInProgress[self.photo.description.hashValue] = self
-        PendingPhotoDownloads.sharedInstance().downloadQueue.addOperation(self)
+        
+        objc_sync_enter( PendingPhotoDownloads.sharedInstance().downloadWorkers)
+        PendingPhotoDownloads.sharedInstance().downloadWorkers.insert(self)
+        objc_sync_exit( PendingPhotoDownloads.sharedInstance().downloadWorkers)
+        
+        if PendingPhotoDownloads.sharedInstance().downloadWorkers.count <= PendingPhotoDownloads.sharedInstance().downloadQueue.maxConcurrentOperationCount {
+            PendingPhotoDownloads.sharedInstance().downloadQueue.addOperation(self)
+        }
     }
     
     public override func main() {
@@ -45,6 +59,16 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
     }
     
     func fireLoadFinish() {
+        
+        objc_sync_enter( PendingPhotoDownloads.sharedInstance().downloadWorkers)
+        PendingPhotoDownloads.sharedInstance().downloadWorkers.remove(self)
+        let pendingWorkers = filter(PendingPhotoDownloads.sharedInstance().downloadWorkers) { !$0.finished && !$0.executing}
+        if let worker = pendingWorkers.first {
+            PendingPhotoDownloads.sharedInstance().downloadWorkers.insert(worker)
+            PendingPhotoDownloads.sharedInstance().downloadQueue.addOperation(worker)
+        }
+        objc_sync_exit( PendingPhotoDownloads.sharedInstance().downloadWorkers)
+        
         for next in imageLoadDelegate {
             dispatch_async(dispatch_get_main_queue()) {
                 next.didFinishLoad()
@@ -108,4 +132,8 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate  {
         self.imageData = nil
         self.session = nil
     }
+}
+
+public func ==(lhs:PhotoDownloadWorker, rhs:PhotoDownloadWorker) -> Bool {
+    return lhs.photo.flickrURL.path! == rhs.photo.flickrURL.path!
 }

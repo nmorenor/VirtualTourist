@@ -19,12 +19,14 @@ class PendingPhotoDownloads: NSObject {
     
     var downloadsInProgress:[Int:AnyObject] = [Int:AnyObject]()
     var downloadQueue:NSOperationQueue
+    var downloadWorkers:Set<PhotoDownloadWorker> = Set()
     
     override init() {
         downloadQueue = NSOperationQueue()
         downloadQueue.name = "Download Queue"
-        downloadQueue.maxConcurrentOperationCount = 1
+        downloadQueue.maxConcurrentOperationCount = 6
         super.init()
     }
+    
     
 }
