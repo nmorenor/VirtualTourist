@@ -25,6 +25,9 @@
 		66B9C2031B1E3B2100242C4F /* PhotoDownloadWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66B9C2021B1E3B2100242C4F /* PhotoDownloadWorker.swift */; };
 		66C4B4E01B1D1D2500F2BBD7 /* ImageLoadDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C4B4DF1B1D1D2500F2BBD7 /* ImageLoadDelegate.swift */; };
 		66C4B4E21B1D22B200F2BBD7 /* PinLocationDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C4B4E11B1D22B200F2BBD7 /* PinLocationDetail.swift */; };
+		66F55ABC1B8BF050005C2F49 /* VirtualTouristMain.png in Resources */ = {isa = PBXBuildFile; fileRef = 66F55ABB1B8BF050005C2F49 /* VirtualTouristMain.png */; };
+		66F55ABE1B8BF059005C2F49 /* VirtualTouristCollectionView.png in Resources */ = {isa = PBXBuildFile; fileRef = 66F55ABD1B8BF059005C2F49 /* VirtualTouristCollectionView.png */; };
+		66F55AC01B8BF0C5005C2F49 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = 66F55ABF1B8BF0C5005C2F49 /* readme.md */; };
 		66FDA7421B1942C5007B2507 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FDA7401B1942C5007B2507 /* HTTPClient.swift */; };
 		66FDA7431B1942C5007B2507 /* HTTPClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FDA7411B1942C5007B2507 /* HTTPClientProtocol.swift */; };
 		66FDA7451B19430F007B2507 /* HttpClientConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FDA7441B19430F007B2507 /* HttpClientConstants.swift */; };
@@ -76,6 +79,9 @@
 		66B9C2021B1E3B2100242C4F /* PhotoDownloadWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoDownloadWorker.swift; sourceTree = "<group>"; };
 		66C4B4DF1B1D1D2500F2BBD7 /* ImageLoadDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoadDelegate.swift; sourceTree = "<group>"; };
 		66C4B4E11B1D22B200F2BBD7 /* PinLocationDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinLocationDetail.swift; sourceTree = "<group>"; };
+		66F55ABB1B8BF050005C2F49 /* VirtualTouristMain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = VirtualTouristMain.png; sourceTree = "<group>"; };
+		66F55ABD1B8BF059005C2F49 /* VirtualTouristCollectionView.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = VirtualTouristCollectionView.png; sourceTree = "<group>"; };
+		66F55ABF1B8BF0C5005C2F49 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		66FDA7401B1942C5007B2507 /* HTTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		66FDA7411B1942C5007B2507 /* HTTPClientProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClientProtocol.swift; sourceTree = "<group>"; };
 		66FDA7441B19430F007B2507 /* HttpClientConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClientConstants.swift; sourceTree = "<group>"; };
@@ -117,6 +123,7 @@
 		660E68F71B13E5AB00EBB898 = {
 			isa = PBXGroup;
 			children = (
+				66F55ABF1B8BF0C5005C2F49 /* readme.md */,
 				660E692D1B13EE4300EBB898 /* MapKit.framework */,
 				660E692B1B13EE3800EBB898 /* QuartzCore.framework */,
 				660E69021B13E5AB00EBB898 /* Virtual Tourist */,
@@ -153,6 +160,8 @@
 		660E69031B13E5AB00EBB898 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				66F55ABD1B8BF059005C2F49 /* VirtualTouristCollectionView.png */,
+				66F55ABB1B8BF050005C2F49 /* VirtualTouristMain.png */,
 				66FDA7591B1A29FE007B2507 /* VirtualTourist.xcdatamodeld */,
 				660E69281B13EBF500EBB898 /* StoryBoards */,
 				660E69251B13EBC600EBB898 /* images */,
@@ -355,9 +364,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66F55ABE1B8BF059005C2F49 /* VirtualTouristCollectionView.png in Resources */,
 				660E69271B13EBE000EBB898 /* LaunchImageLarge.png in Resources */,
 				660E690B1B13E5AB00EBB898 /* Main.storyboard in Resources */,
 				660E69101B13E5AB00EBB898 /* LaunchScreen.xib in Resources */,
+				66F55ABC1B8BF050005C2F49 /* VirtualTouristMain.png in Resources */,
 				660E690D1B13E5AB00EBB898 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -394,6 +405,7 @@
 				66FDA75B1B1A29FE007B2507 /* VirtualTourist.xcdatamodeld in Sources */,
 				66C4B4E21B1D22B200F2BBD7 /* PinLocationDetail.swift in Sources */,
 				66FDA7621B1B7B6A007B2507 /* PhotoCell.swift in Sources */,
+				66F55AC01B8BF0C5005C2F49 /* readme.md in Sources */,
 				66FDA7421B1942C5007B2507 /* HTTPClient.swift in Sources */,
 				66FDA74B1B1A059C007B2507 /* FlickerConstants.swift in Sources */,
 				6602E59F1B2661AF00100B85 /* CoreDataStack.swift in Sources */,
