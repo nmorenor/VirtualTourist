@@ -4,7 +4,7 @@ An application that let you travel virtually to any place in the world with the 
 
 The goal of this Application is to work deeper with Core Data exploring the Data stack model. As an addition start looking on how to do more with NSOperations to make the app run faster and smoother.
 
-![alt tag](https://raw.github.com/nmorenor/VirtualTourist/Virtual%20Tourist/VirtualTouristMain.png)
+![alt tag](https://raw.github.com/nmorenor/VirtualTourist/master/Virtual%20Tourist/VirtualTouristMain.png)
 ![alt tag](https://raw.github.com/nmorenor/VirtualTourist/master/Virtual%20Tourist/VirtualTouristCollectionView.png)
 
 ## License
