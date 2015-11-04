@@ -27,7 +27,6 @@ class ImageCache {
         }
         
         let path = pathForIdentifier(identifier!)
-        var data:NSData?
         
         if let image = inMeMoryCache.objectForKey(identifier!) as? UIImage {
             return image
@@ -45,18 +44,21 @@ class ImageCache {
         
         if (image == nil) {
             inMeMoryCache.removeObjectForKey(path)
-            NSFileManager.defaultManager().removeItemAtPath(path, error: nil)
+            do {
+                try NSFileManager.defaultManager().removeItemAtPath(path)
+            } catch _ {
+            }
             return
         }
         
         inMeMoryCache.setObject(image!, forKey: path)
         
-        let data = UIImagePNGRepresentation(image!)
+        let data = UIImagePNGRepresentation(image!)!
         data.writeToFile(path, atomically: true)
     }
     
     func pathForIdentifier(identifier: String) -> String {
-        let documentsDirectoryURL:NSURL = NSFileManager.defaultManager().URLsForDirectory(NSSearchPathDirectory.DocumentDirectory, inDomains: NSSearchPathDomainMask.UserDomainMask).first as! NSURL
+        let documentsDirectoryURL:NSURL = NSFileManager.defaultManager().URLsForDirectory(NSSearchPathDirectory.DocumentDirectory, inDomains: NSSearchPathDomainMask.UserDomainMask).first!
         let fullURL = documentsDirectoryURL.URLByAppendingPathComponent(identifier)
         
         return fullURL.path!

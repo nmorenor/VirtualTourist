@@ -11,7 +11,7 @@ import CoreData
 
 public typealias ContextSaveResult = (success: Bool, error: NSError?)
 
-public struct CoreDataModel: Printable {
+public struct CoreDataModel: CustomStringConvertible {
     
     public let name:String
     public let bundle:NSBundle
@@ -46,10 +46,13 @@ public struct CoreDataModel: Printable {
     public var modelStoreNeedsMigration:Bool {
         get {
             var error:NSError?
-            if let sourceMetaData = NSPersistentStoreCoordinator.metadataForPersistentStoreOfType(nil, URL: storeURL, error: &error) {
+            do {
+                let sourceMetaData = try NSPersistentStoreCoordinator.metadataForPersistentStoreOfType(nil, URL: storeURL)
                 return !managedObjectModel.isConfiguration(nil, compatibleWithStoreMetadata: sourceMetaData)
+            } catch let error1 as NSError {
+                error = error1
             }
-            println("*** \(toString(CoreDataModel.self)) ERROR: [\(__LINE__)] \(__FUNCTION__) Failure checking persistent store coordinator meta data: \(error)")
+            print("*** \(String(CoreDataModel.self)) ERROR: [\(__LINE__)] \(__FUNCTION__) Failure checking persistent store coordinator meta data: \(error)")
             return false
         }
     }
@@ -66,9 +69,16 @@ public struct CoreDataModel: Printable {
         
         if let storePath = storeURL.path {
             if fileManager.fileExistsAtPath(storePath) {
-                let success = fileManager.removeItemAtURL(storeURL, error: &error)
+                let success: Bool
+                do {
+                    try fileManager.removeItemAtURL(storeURL)
+                    success = true
+                } catch let error1 as NSError {
+                    error = error1
+                    success = false
+                }
                 if !success {
-                    println("*** \(toString(CoreDataModel.self)) ERROR: [\(__LINE__)] \(__FUNCTION__) Could not remove model store at url: \(error)")
+                    print("*** \(String(CoreDataModel.self)) ERROR: [\(__LINE__)] \(__FUNCTION__) Could not remove model store at url: \(error)")
                 }
                 return (success, error)
             }
@@ -79,7 +89,7 @@ public struct CoreDataModel: Printable {
     
     public var description:String {
         get {
-            return "<\(toString(CoreDataModel.self)): name=\(name), needsMigration=\(modelStoreNeedsMigration), databaseFileName=\(databaseFileName), modelURL=\(modelURL), storeURL=\(storeURL)>"
+            return "<\(String(CoreDataModel.self)): name=\(name), needsMigration=\(modelStoreNeedsMigration), databaseFileName=\(databaseFileName), modelURL=\(modelURL), storeURL=\(storeURL)>"
         }
     }
 }
@@ -92,10 +102,19 @@ public func saveContext(context: NSManagedObjectContext, completion: (ContextSav
     
     context.performBlock { () -> Void in
         var error: NSError?
-        let success = context.save(&error)
+        let success: Bool
+        do {
+            try context.save()
+            success = true
+        } catch let error1 as NSError {
+            error = error1
+            success = false
+        } catch {
+            fatalError()
+        }
         
         if !success {
-            println("*** ERROR: [\(__LINE__)] \(__FUNCTION__) Could not save managed object context: \(error)")
+            print("*** ERROR: [\(__LINE__)] \(__FUNCTION__) Could not save managed object context: \(error)")
         }
         
         completion((success, error))
@@ -106,7 +125,13 @@ public func saveContext(context: NSManagedObjectContext, completion: (ContextSav
 
 private func documentsDirectoryURL() -> NSURL {
     var error: NSError?
-    let url = NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true, error: &error)
+    let url: NSURL?
+    do {
+        url = try NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
+    } catch let error1 as NSError {
+        error = error1
+        url = nil
+    }
     assert(url != nil, "*** Error finding documents directory: \(error)")
     return url!
 }

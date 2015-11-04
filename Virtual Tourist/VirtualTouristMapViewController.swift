@@ -32,11 +32,14 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         self.mapView.addGestureRecognizer(longPressRecognizer)
         self.mapView.delegate = self
         
-        self.fetchedResutlsController.performFetch(nil)
+        do {
+            try self.fetchedResutlsController.performFetch()
+        } catch _ {
+        }
         self.fetchedResutlsController.delegate = self
         if let fetched = self.fetchedResutlsController.fetchedObjects as? [PinLocation] {
             for annotation in fetched {
-                let toAdd = MapPinAnnotation(latitude: annotation.latitude as! Double, longitude: annotation.longitude as! Double)
+                let toAdd = MapPinAnnotation(latitude: annotation.latitude as Double, longitude: annotation.longitude as Double)
                 toAdd.location = annotation
                 self.mapView.addAnnotation(toAdd)
             }
@@ -63,12 +66,11 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
     }
     
     //MARK: - NSFetchedResultsControllerDelegate
-    
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         switch(type) {
         case NSFetchedResultsChangeType.Insert :
             if let location:PinLocation = anObject as? PinLocation {
-                let annotation = MapPinAnnotation(latitude: location.latitude as! Double, longitude: location.longitude as! Double)
+                let annotation = MapPinAnnotation(latitude: location.latitude as Double, longitude: location.longitude as Double)
                 annotation.location = location
                 self.mapView.removeAnnotation(annotation)
                 self.mapView.addAnnotation(annotation)
@@ -100,16 +102,16 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
             let clocation = CLLocation(latitude: self.currentAnnotation!.coordinate.latitude, longitude: self.currentAnnotation!.coordinate.longitude)
             CLGeocoder().reverseGeocodeLocation(clocation) { placemarks, error in
                 if error != nil {
-                    println("Reverse geocoder failed with error" + error.localizedDescription)
+                    print("Reverse geocoder failed with error" + error!.localizedDescription)
                     return
                 }
                 
-                if placemarks.count > 0 {
-                    let pm = placemarks[0] as! CLPlacemark
+                if placemarks!.count > 0 {
+                    let pm = placemarks![0]
                     
                     if pm.locality != nil {
                         dispatch_async(dispatch_get_main_queue()) {
-                            PinLocationDetail(location: location, locality: pm.locality, context: self.sharedContext)
+                            _ = PinLocationDetail(location: location, locality: pm.locality!, context: self.sharedContext)
                             CoreDataStackManager.sharedInstance().saveContext()
                         }
                     }
@@ -124,16 +126,16 @@ class VirtualTouristMapViewController: UIViewController, NSFetchedResultsControl
         let touchMapCoordinate = self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView)
         
         self.currentAnnotation = MapPinAnnotation(latitude: touchMapCoordinate.latitude, longitude: touchMapCoordinate.longitude)
-        self.mapView.addAnnotation(self.currentAnnotation)
+        self.mapView.addAnnotation(self.currentAnnotation!)
     }
     
     func changePinLocationForDrag(recognizer:UIGestureRecognizer) {
         let touchPoint = recognizer.locationInView(self.mapView)
         let touchMapCoordinate = self.mapView.convertPoint(touchPoint, toCoordinateFromView: self.mapView)
         
-        self.mapView.removeAnnotation(self.currentAnnotation)
+        self.mapView.removeAnnotation(self.currentAnnotation!)
         self.currentAnnotation?.coordinate = touchMapCoordinate
-        self.mapView.addAnnotation(self.currentAnnotation)
+        self.mapView.addAnnotation(self.currentAnnotation!)
     }
     
     //MARK: - Controller

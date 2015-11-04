@@ -69,7 +69,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
         
         self.navigationItem.backBarButtonItem?.title = "Back"
         
-        var region:MKCoordinateRegion = MKCoordinateRegion(center: self.annotation.coordinate, span: MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0))
+        let region:MKCoordinateRegion = MKCoordinateRegion(center: self.annotation.coordinate, span: MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0))
         self.mapView.setRegion(region, animated: true)
     }
     
@@ -209,11 +209,15 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     private func performFetch() {
         var error:NSError?
         NSFetchedResultsController.deleteCacheWithName("photos")
-        self.fetchedResultsViewController.performFetch(&error)
-        if let error = error {
-            println("Error performing initial fetch")
+        do {
+            try self.fetchedResultsViewController.performFetch()
+        } catch let error1 as NSError {
+            error = error1
         }
-        let sectionInfo = self.fetchedResultsViewController.sections!.first as! NSFetchedResultsSectionInfo
+        if let _ = error {
+            print("Error performing initial fetch")
+        }
+        let sectionInfo = self.fetchedResultsViewController.sections!.first!
         if sectionInfo.numberOfObjects == 0 {
             noPhotosLabel.hidden = self.activityView == nil ? false : true
             collectionView.hidden = true
@@ -230,7 +234,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let sectionInfo = self.fetchedResultsViewController.sections![section] as! NSFetchedResultsSectionInfo
+        let sectionInfo = self.fetchedResultsViewController.sections![section] 
         
         if let photos = self.annotation!.location?.photos where photos.count == 0 && self.isViewLoaded() && self.view.window != nil && self.newCollectionButton.enabled && !FlickerPhotoDelegate.sharedInstance().isLoading(annotation.location!) {
             noPhotosLabel.hidden = false
@@ -254,7 +258,7 @@ class VirtualTouristGalleryViewController : UIViewController, UICollectionViewDa
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         let cell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
         
-        if let index = find(selectedIndexes, indexPath) {
+        if let index = selectedIndexes.indexOf(indexPath) {
             selectedIndexes.removeAtIndex(index)
         } else {
             selectedIndexes.append(indexPath)

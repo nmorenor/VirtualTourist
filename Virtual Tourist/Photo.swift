@@ -12,7 +12,7 @@ import CoreData
 
 @objc(Photo)
 
-public class Photo : NSManagedObject, Equatable, Printable {
+public class Photo : NSManagedObject {
     
     @NSManaged public var imagePath:String
     @NSManaged public var flickrURL:NSURL
@@ -36,7 +36,7 @@ public class Photo : NSManagedObject, Equatable, Printable {
         self.imagePath = self.flickrURL.lastPathComponent!
         self.pinLocation = location
         if self.image == nil {
-            PhotoDownloadWorker(photo: self)
+            _ = PhotoDownloadWorker(photo: self)
         }
     }
     

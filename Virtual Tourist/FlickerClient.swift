@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-let FLICKR_API_KEY = "FLICKR_API_CLIENT"
+let FLICKR_API_KEY = "8c97222cbce046fd94f0c1a6fc17a022"
 
 public class FlickerClient: NSObject, HTTPClientProtocol {
     
@@ -38,7 +38,7 @@ public class FlickerClient: NSObject, HTTPClientProtocol {
     }
     
     lazy var sharedModelContext:NSManagedObjectContext = {
-        return CoreDataStackManager.sharedInstance().dataStack.childManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
+        return CoreDataStackManager.sharedInstance().dataStack.childManagedObjectContext(NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
     }()
     
     // MARK: - Shared Instance

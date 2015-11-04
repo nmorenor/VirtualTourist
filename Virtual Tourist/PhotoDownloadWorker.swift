@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import QuartzCore
 
-public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate, Hashable, Equatable  {
+public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate {
     
     var imageLoadDelegate:[ImageLoadDelegate] = [ImageLoadDelegate]()
     private var imageData:NSMutableData?
@@ -62,7 +62,7 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate, Hashable
         
         objc_sync_enter( PendingPhotoDownloads.sharedInstance().downloadWorkers)
         PendingPhotoDownloads.sharedInstance().downloadWorkers.remove(self)
-        let pendingWorkers = filter(PendingPhotoDownloads.sharedInstance().downloadWorkers) { !$0.finished && !$0.executing}
+        let pendingWorkers = PendingPhotoDownloads.sharedInstance().downloadWorkers.filter { !$0.finished && !$0.executing}
         if let worker = pendingWorkers.first {
             PendingPhotoDownloads.sharedInstance().downloadWorkers.insert(worker)
             PendingPhotoDownloads.sharedInstance().downloadQueue.addOperation(worker)
@@ -112,14 +112,14 @@ public class PhotoDownloadWorker:NSOperation, NSURLSessionDataDelegate, Hashable
         self.imageData?.appendData(data)
         self.receivedBytes += data.length
         
-        var progress = CGFloat((Float(self.receivedBytes) / Float(self.totalBytes)))
+        let progress = CGFloat((Float(self.receivedBytes) / Float(self.totalBytes)))
         self.fireProgressDelegate(progress)
     }
     
     public func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
         PendingPhotoDownloads.sharedInstance().downloadsInProgress.removeValueForKey(self.photo.description.hashValue)
         if let error = error {
-            println("Error downloading photo \(error)")
+            print("Error downloading photo \(error)")
         }
         if let imageData = self.imageData {
             let image = UIImage(data: imageData)

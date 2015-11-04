@@ -12,7 +12,7 @@ import UIKit
 
 extension VirtualTouristMapViewController : MKMapViewDelegate {
     
-    func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) -> MKAnnotationView! {
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         if let annotation = annotation as? MapPinAnnotation {
             let identifier = "pin"
             var view:MKPinAnnotationView
@@ -28,7 +28,7 @@ extension VirtualTouristMapViewController : MKMapViewDelegate {
         return nil
     }
     
-    func mapView(mapView: MKMapView!, didSelectAnnotationView view: MKAnnotationView!) {
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         if self.editMode {
             if let pinAnnotation = view as? MKPinAnnotationView {
                 let annotation = pinAnnotation.annotation as! MapPinAnnotation

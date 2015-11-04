@@ -15,9 +15,9 @@ extension FlickerClient {
     
     public func getPhototosFromFlickerSearch(annotation:PinLocation, delegate:FlickerDelegate?) {
         self.getImageFromFlickerSearch(annotation) { success, result, errorString in
-            println("Flickr search done")
+            print("Flickr search done")
             if success {
-                var photos = [Photo]()
+                let photos = [Photo]()
                 var urls:[NSURL] = [NSURL]()
                 for nextPhoto in result! {
                     if urls.count >= MAX_PHOTOS {
@@ -31,7 +31,7 @@ extension FlickerClient {
                 }
 
                 if let pinLocation = self.sharedModelContext.objectWithID(annotation.objectID) as? PinLocation {
-                    let photosModel = urls.map({ Photo(location: pinLocation, imageURL: $0, context: self.sharedModelContext)})
+                    _ = urls.map({ Photo(location: pinLocation, imageURL: $0, context: self.sharedModelContext)})
                     NSNotificationCenter.defaultCenter().addObserver(self, selector: "mergeChanges:", name: NSManagedObjectContextDidSaveNotification, object: self.sharedModelContext)
                     saveContext(self.sharedModelContext) { success in
                         dispatch_async(dispatch_get_main_queue()) {
@@ -47,7 +47,7 @@ extension FlickerClient {
     }
     
     public func mergeChanges(notification:NSNotification) {
-        var mainContext:NSManagedObjectContext = CoreDataStackManager.sharedInstance().dataStack.managedObjectContext
+        let mainContext:NSManagedObjectContext = CoreDataStackManager.sharedInstance().dataStack.managedObjectContext
         dispatch_async(dispatch_get_main_queue()) {
             mainContext.mergeChangesFromContextDidSaveNotification(notification)
             CoreDataStackManager.sharedInstance().saveContext()
@@ -55,7 +55,7 @@ extension FlickerClient {
     }
     
     public func getImageFromFlickerSearch(annotation:PinLocation, completionHandler:(success:Bool, result:[[String: AnyObject]]?, errorString:String?) -> Void) {
-        var parameters = [
+        let parameters = [
             FlickerClient.ParameterKeys.METHOD : FlickerClient.Methods.SEARCH,
             FlickerClient.ParameterKeys.API_KEY : FLICKR_API_KEY,
             FlickerClient.ParameterKeys.BBOX : self.createBoundingBoxString(annotation),
@@ -65,7 +65,7 @@ extension FlickerClient {
             FlickerClient.ParameterKeys.NO_JSON_CALLBACK : FlickerClient.Constants.NO_JSON_CALLBACK
         ]
         self.httpClient?.taskForGETMethod("", parameters: parameters) { JSONResult, error in
-            if let error = error {
+            if let _ = error {
                 completionHandler(success: false, result: nil, errorString: "Can not find photos for location")
             } else  {
                 if let photosDictionary = JSONResult.valueForKey("photos") as? [String:AnyObject] {
@@ -91,7 +91,7 @@ extension FlickerClient {
         var withPageDictionary = methodArguments
         withPageDictionary["page"] = pageNumber
         self.httpClient?.taskForGETMethod("", parameters: withPageDictionary) { JSONResult, error in
-            if let error = error {
+            if let _ = error {
                 completionHandler(success: false, result: nil, errorString: "Can not find photos for location")
             } else {
                 if let photosDictionary = JSONResult.valueForKey("photos") as? [String:AnyObject] {
@@ -123,8 +123,8 @@ extension FlickerClient {
 
     private func createBoundingBoxString(annotation:PinLocation) -> String {
         
-        let latitude = annotation.latitude as! Double
-        let longitude = annotation.longitude as! Double
+        let latitude = annotation.latitude as Double
+        let longitude = annotation.longitude as Double
         
         /* Fix added to ensure box is bounded by minimum and maximums */
         let bottom_left_lon = max(longitude - FlickerClient.Constants.BOUNDING_BOX_HALF_WIDTH, FlickerClient.Constants.LON_MIN)

@@ -11,7 +11,7 @@ import CoreData
 
 @objc(PinLocation)
 
-public class PinLocation : NSManagedObject, Equatable, Printable, Hashable {
+public class PinLocation : NSManagedObject {
     
     @NSManaged public var latitude:NSNumber
     @NSManaged public var longitude:NSNumber
